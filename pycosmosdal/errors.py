@@ -17,3 +17,8 @@ class DatabaseError(CosmosDalError):
 class ContainerError(CosmosDalError):
     def __init__(self, cosmos_error: HTTPFailure):
         super().__init__(cosmos_error)
+
+
+class DocumentError(CosmosDalError):
+    def __init__(self, cosmos_error: HTTPFailure):
+        super().__init__(cosmos_error)

@@ -85,5 +85,5 @@ class ContainerManager(Manager):
         return None
 
     @staticmethod
-    def get_container_link(container_id: str, database_id: str):
+    def get_container_link(container_id: str, database_id: str) -> str:
         return f"{DatabaseManager.get_database_link(database_id)}/colls/{container_id}"

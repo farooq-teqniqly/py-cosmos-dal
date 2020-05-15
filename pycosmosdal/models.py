@@ -16,3 +16,8 @@ class Database(CosmosResource):
 class Container(CosmosResource):
     def __init__(self, native_resource: Any):
         super().__init__(native_resource)
+
+
+class Document(CosmosResource):
+    def __init__(self, native_resource: Any):
+        super().__init__(native_resource)
