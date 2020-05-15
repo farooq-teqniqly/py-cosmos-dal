@@ -36,12 +36,21 @@ class DocumentManager(Manager):
         except HTTPFailure as e:
             raise DocumentError(e)
 
-    def delete_document(self, document_id: Any, collection_id: str, database_id: str):
+    def delete_document(
+        self, document_id: Any, collection_id: str, database_id: str, **kwargs
+    ):
+        options = dict()
+        partition_key = kwargs.get("partition_key")
+
+        if partition_key:
+            options["partitionKey"] = partition_key
+
         try:
             self.client.native_client.DeleteItem(
                 DocumentManager.get_document_link(
                     document_id, collection_id, database_id
-                )
+                ),
+                options=options,
             )
         except HTTPFailure as e:
             raise DocumentError(e)
@@ -71,18 +80,28 @@ class DocumentManager(Manager):
         if query_parameters:
             query_spec["parameters"] = query_parameters
 
+        options = dict()
+
         max_item_count = kwargs.get("max_item_count")
 
         if max_item_count:
-            max_item_count = int(max_item_count)
-        else:
-            max_item_count = -1
+            options["maxItemCount"] = int(max_item_count)
+
+        partition_key = kwargs.get("partition_key")
+
+        if partition_key:
+            options["partitionKey"] = partition_key
+
+        enable_cross_partition_query = kwargs.get("enable_cross_partition_query")
+
+        if enable_cross_partition_query:
+            options["enableCrossPartitionQuery"] = bool(enable_cross_partition_query)
 
         try:
             query_iterable = self.client.native_client.QueryItems(
                 CollectionManager.get_collection_link(collection_id, database_id),
                 query_spec,
-                options=dict(maxItemCount=max_item_count),
+                options=options,
             )
 
             return DocumentQueryResults(query_iterable)

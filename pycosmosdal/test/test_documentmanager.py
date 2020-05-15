@@ -32,7 +32,7 @@ class DocumentManagerTests(TestCase):
     def test_create_get_delete_document(self):
         try:
             self.document_manager.upsert_document(
-                DocumentManagerTests._get_test_document("foobar"),
+                DocumentManagerTests.get_test_document("foobar"),
                 COLLECTION_NAME,
                 DATABASE_NAME,
             )
@@ -49,13 +49,13 @@ class DocumentManagerTests(TestCase):
     def test_upsert_document(self):
         try:
             self.document_manager.upsert_document(
-                DocumentManagerTests._get_test_document("foobar"),
+                DocumentManagerTests.get_test_document("foobar"),
                 COLLECTION_NAME,
                 DATABASE_NAME,
             )
 
             document = self.document_manager.upsert_document(
-                DocumentManagerTests._get_test_document("foobar"),
+                DocumentManagerTests.get_test_document("foobar"),
                 COLLECTION_NAME,
                 DATABASE_NAME,
             )
@@ -69,7 +69,7 @@ class DocumentManagerTests(TestCase):
     def test_get_documents(self):
         try:
             self.document_manager.upsert_document(
-                DocumentManagerTests._get_test_document("foobar"),
+                DocumentManagerTests.get_test_document("foobar"),
                 COLLECTION_NAME,
                 DATABASE_NAME,
             )
@@ -92,7 +92,7 @@ class DocumentManagerTests(TestCase):
     def test_query_documents(self):
         try:
             self.document_manager.upsert_document(
-                DocumentManagerTests._get_test_document("foobar"),
+                DocumentManagerTests.get_test_document("foobar"),
                 COLLECTION_NAME,
                 DATABASE_NAME,
             )
@@ -111,7 +111,7 @@ class DocumentManagerTests(TestCase):
         try:
             for i in range(0, 10):
                 self.document_manager.upsert_document(
-                    DocumentManagerTests._get_test_document(f"foobar-{i}"),
+                    DocumentManagerTests.get_test_document(f"foobar-{i}"),
                     COLLECTION_NAME,
                     DATABASE_NAME,
                 )
@@ -134,7 +134,7 @@ class DocumentManagerTests(TestCase):
     def test_query_documents_with_parameters(self):
         try:
             self.document_manager.upsert_document(
-                DocumentManagerTests._get_test_document("foobar"),
+                DocumentManagerTests.get_test_document("foobar"),
                 COLLECTION_NAME,
                 DATABASE_NAME,
             )
@@ -156,7 +156,7 @@ class DocumentManagerTests(TestCase):
             )
 
     @staticmethod
-    def _get_test_document(document_id: str) -> dict:
+    def get_test_document(document_id: str) -> dict:
         return {
             "id": document_id,
             "account_number": "Account1",

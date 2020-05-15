@@ -1,7 +1,10 @@
 from abc import ABC
 from typing import Any
 
+from azure.cosmos.errors import HTTPFailure
 from azure.cosmos.query_iterable import QueryIterable
+
+from pycosmosdal.errors import DocumentError
 
 
 class CosmosResource(ABC):
@@ -30,4 +33,7 @@ class DocumentQueryResults:
         self._query_iterable = query_iterable
 
     def fetch_next(self) -> list:
-        return self._query_iterable.fetch_next_block()
+        try:
+            return [Document(d) for d in self._query_iterable.fetch_next_block()]
+        except HTTPFailure as e:
+            raise DocumentError(e)
