@@ -1,14 +1,15 @@
 from datetime import date
+from typing import Union
 from unittest import TestCase
 
 from pycosmosdal.cosmosdbclient import CosmosDbEmulatorClient
 from pycosmosdal.databasemanager import DatabaseManager
-from pycosmosdal.containermanager import ContainerManager
+from pycosmosdal.collectionmanager import CollectionManager
 from pycosmosdal.documentmanager import DocumentManager
 from pycosmosdal.errors import DocumentError
 
 DATABASE_NAME = __name__
-CONTAINER_NAME = f"{DATABASE_NAME}_container"
+COLLECTION_NAME = f"{DATABASE_NAME}_container"
 
 client = CosmosDbEmulatorClient()
 
@@ -19,8 +20,8 @@ class DocumentManagerTests(TestCase):
         cls.database_manager = DatabaseManager(client)
         cls.database_manager.create_database(DATABASE_NAME)
 
-        cls.container_manager = ContainerManager(client)
-        cls.container_manager.create_container(CONTAINER_NAME, DATABASE_NAME)
+        cls.container_manager = CollectionManager(client)
+        cls.container_manager.create_collection(COLLECTION_NAME, DATABASE_NAME)
 
     @classmethod
     def tearDownClass(cls):
@@ -33,41 +34,114 @@ class DocumentManagerTests(TestCase):
         try:
             self.document_manager.create_document(
                 DocumentManagerTests._get_test_document("foobar"),
-                CONTAINER_NAME,
+                COLLECTION_NAME,
                 DATABASE_NAME,
             )
 
             document = self.document_manager.get_document(
-                "foobar", CONTAINER_NAME, DATABASE_NAME
+                "foobar", COLLECTION_NAME, DATABASE_NAME
             )
             self.assertEqual("foobar", document.resource_id)
         finally:
             self.document_manager.delete_document(
-                "foobar", CONTAINER_NAME, DATABASE_NAME
+                "foobar", COLLECTION_NAME, DATABASE_NAME
             )
 
     def test_get_documents(self):
         try:
             self.document_manager.create_document(
                 DocumentManagerTests._get_test_document("foobar"),
-                CONTAINER_NAME,
+                COLLECTION_NAME,
                 DATABASE_NAME,
             )
 
             documents = list(
-                self.document_manager.get_documents(CONTAINER_NAME, DATABASE_NAME)
+                self.document_manager.get_documents(COLLECTION_NAME, DATABASE_NAME)
             )
 
             self.assertEqual(1, len(documents))
         finally:
             self.document_manager.delete_document(
-                "foobar", CONTAINER_NAME, DATABASE_NAME
+                "foobar", COLLECTION_NAME, DATABASE_NAME
             )
 
     def test_delete_non_existent_document_raises_DocumentError(self):
         self.assertRaises(
             DocumentError, self.document_manager.delete_document, "foo", "bar", "baz"
         )
+
+    def test_query_documents(self):
+        try:
+            self.document_manager.create_document(
+                DocumentManagerTests._get_test_document("foobar"),
+                COLLECTION_NAME,
+                DATABASE_NAME,
+            )
+
+            documents = list(
+                self.document_manager.query_documents(
+                    COLLECTION_NAME,
+                    DATABASE_NAME,
+                    "SELECT * FROM r WHERE r.id='foobar'",
+                )
+            )
+
+            self.assertEqual(1, len(documents))
+        finally:
+            self.document_manager.delete_document(
+                "foobar", COLLECTION_NAME, DATABASE_NAME
+            )
+
+    def test_query_documents_limit_results(self):
+        try:
+            for i in range(0, 10):
+                self.document_manager.create_document(
+                    DocumentManagerTests._get_test_document(f"foobar-{i}"),
+                    COLLECTION_NAME,
+                    DATABASE_NAME,
+                )
+
+            documents = list(
+                self.document_manager.query_documents(
+                    COLLECTION_NAME,
+                    DATABASE_NAME,
+                    "SELECT * FROM r WHERE r.id>'0'",
+                    max_item_count=3,
+                )
+            )
+
+            self.assertEqual(10, len(documents))
+        finally:
+            for i in range(0, 10):
+                self.document_manager.delete_document(
+                    f"foobar-{i}", COLLECTION_NAME, DATABASE_NAME
+                )
+
+    def test_query_documents_with_parameters(self):
+        try:
+            self.document_manager.create_document(
+                DocumentManagerTests._get_test_document("foobar"),
+                COLLECTION_NAME,
+                DATABASE_NAME,
+            )
+
+            documents = list(
+                self.document_manager.query_documents(
+                    COLLECTION_NAME,
+                    DATABASE_NAME,
+                    "SELECT * FROM r WHERE r.subtotal>@subtotal AND EXISTS(SELECT VALUE n FROM n in r.items WHERE n.product_id=@product_id)",
+                    [
+                        dict(name="@subtotal", value=400),
+                        dict(name="@product_id", value=100),
+                    ],
+                )
+            )
+
+            self.assertEqual(1, len(documents))
+        finally:
+            self.document_manager.delete_document(
+                "foobar", COLLECTION_NAME, DATABASE_NAME
+            )
 
     @staticmethod
     def _get_test_document(document_id: str) -> dict:

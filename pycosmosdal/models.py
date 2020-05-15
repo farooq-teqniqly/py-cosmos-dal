@@ -13,7 +13,7 @@ class Database(CosmosResource):
         super().__init__(native_resource)
 
 
-class Container(CosmosResource):
+class Collection(CosmosResource):
     def __init__(self, native_resource: Any):
         super().__init__(native_resource)
 

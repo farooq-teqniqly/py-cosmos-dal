@@ -1,8 +1,8 @@
-from typing import Any, Generator
+from typing import Any, Generator, Dict, List
 
 from azure.cosmos.errors import HTTPFailure
 
-from pycosmosdal.containermanager import ContainerManager
+from pycosmosdal.collectionmanager import CollectionManager
 from pycosmosdal.cosmosdbclient import CosmosDbClient
 from pycosmosdal.errors import DocumentError
 from pycosmosdal.manager import Manager
@@ -17,7 +17,7 @@ class DocumentManager(Manager):
         self, document: dict, collection_id: str, database_id: str
     ) -> Document:
         document = self.client.native_client.CreateItem(
-            ContainerManager.get_container_link(collection_id, database_id), document
+            CollectionManager.get_collection_link(collection_id, database_id), document
         )
 
         return Document(document)
@@ -43,12 +43,43 @@ class DocumentManager(Manager):
     ) -> Generator[Document, None, None]:
 
         for document in self.client.native_client.ReadItems(
-            ContainerManager.get_container_link(collection_id, database_id)
+            CollectionManager.get_collection_link(collection_id, database_id)
         ):
             yield Document(document)
+
+    def query_documents(
+        self,
+        collection_id: str,
+        database_id: str,
+        query: str,
+        query_parameters: List[Dict[str, Any]] = None,
+        **kwargs,
+    ) -> Generator[Document, None, None]:
+
+        query_spec = dict(query=query)
+
+        if query_parameters:
+            query_spec["parameters"] = query_parameters
+
+        max_item_count = kwargs.get("max_item_count")
+
+        if max_item_count:
+            max_item_count = int(max_item_count)
+
+        try:
+            documents = self.client.native_client.QueryItems(
+                CollectionManager.get_collection_link(collection_id, database_id),
+                query_spec,
+                options=dict(maxItemCount=max_item_count),
+            )
+
+            for document in documents:
+                yield Document(document)
+        except HTTPFailure as e:
+            raise DocumentError(e)
 
     @staticmethod
     def get_document_link(
         document_id: Any, collection_id: str, database_id: str
     ) -> str:
-        return f"{ContainerManager.get_container_link(collection_id, database_id)}/docs/{str(document_id)}"
+        return f"{CollectionManager.get_collection_link(collection_id, database_id)}/docs/{str(document_id)}"

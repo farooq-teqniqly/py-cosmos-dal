@@ -4,17 +4,17 @@ from azure.cosmos.errors import HTTPFailure
 
 from pycosmosdal.cosmosdbclient import CosmosDbClient
 from pycosmosdal.databasemanager import DatabaseManager
-from pycosmosdal.errors import ContainerError
+from pycosmosdal.errors import CollectionError
 from pycosmosdal.manager import Manager
-from pycosmosdal.models import Container
+from pycosmosdal.models import Collection
 
 
-class ContainerManager(Manager):
+class CollectionManager(Manager):
     def __init__(self, client: CosmosDbClient):
         super().__init__(client)
 
-    def create_container(self, container_id: str, database_id: str, **kwargs):
-        parameter_dict = dict(id=container_id)
+    def create_collection(self, collection_id: str, database_id: str, **kwargs):
+        parameter_dict = dict(id=collection_id)
         unique_key_policy = kwargs.get("unique_keys")
 
         if unique_key_policy:
@@ -40,50 +40,50 @@ class ContainerManager(Manager):
                 collection_options_dict,
             )
         except HTTPFailure as e:
-            raise ContainerError(e)
+            raise CollectionError(e)
 
-    def delete_container(self, container_id: str, database_id: str):
+    def delete_collection(self, collection_id: str, database_id: str):
         try:
             self.client.native_client.DeleteContainer(
-                ContainerManager.get_container_link(container_id, database_id)
+                CollectionManager.get_collection_link(collection_id, database_id)
             )
         except HTTPFailure as e:
-            raise ContainerError(e)
+            raise CollectionError(e)
 
-    def list_containers(self, database_id: str) -> Generator[Container, None, None]:
-        for container in self.client.native_client.ReadContainers(
+    def list_collections(self, database_id: str) -> Generator[Collection, None, None]:
+        for collection in self.client.native_client.ReadContainers(
             DatabaseManager.get_database_link(database_id)
         ):
-            yield Container(native_resource=container)
+            yield Collection(native_resource=collection)
 
-    def get_container(self, container_id: str, database_id: str) -> Container:
+    def get_collection(self, collection_id: str, database_id: str) -> Collection:
         try:
-            container = self.client.native_client.ReadContainer(
-                ContainerManager.get_container_link(container_id, database_id)
+            collection = self.client.native_client.ReadContainer(
+                CollectionManager.get_collection_link(collection_id, database_id)
             )
-            return Container(native_resource=container)
+            return Collection(native_resource=collection)
         except HTTPFailure as e:
-            raise ContainerError(e)
+            raise CollectionError(e)
 
-    def find_container(
-        self, container_id: str, database_id: str
-    ) -> Union[Container, None]:
+    def find_collection(
+        self, collection_id: str, database_id: str
+    ) -> Union[Collection, None]:
         query = dict(
             query="SELECT * FROM r WHERE r.id=@id",
-            parameters=[dict(name="@id", value=container_id)],
+            parameters=[dict(name="@id", value=collection_id)],
         )
 
-        containers = list(
+        collections = list(
             self.client.native_client.QueryContainers(
                 DatabaseManager.get_database_link(database_id), query
             )
         )
 
-        if len(containers) > 0:
-            return Container(native_resource=containers[0])
+        if len(collections) > 0:
+            return Collection(native_resource=collections[0])
 
         return None
 
     @staticmethod
-    def get_container_link(container_id: str, database_id: str) -> str:
-        return f"{DatabaseManager.get_database_link(database_id)}/colls/{container_id}"
+    def get_collection_link(collection_id: str, database_id: str) -> str:
+        return f"{DatabaseManager.get_database_link(database_id)}/colls/{collection_id}"
