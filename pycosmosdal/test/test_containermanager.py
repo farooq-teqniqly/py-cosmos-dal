@@ -74,3 +74,8 @@ class ContainerManagerTests(TestCase):
         self.assertEqual(
             0, len(list(self.container_manager.list_containers(DATABASE_NAME)))
         )
+
+    def test_delete_container_when_not_exists_raises_DatabaseError(self):
+        self.assertRaises(
+            ContainerError, self.container_manager.delete_container, "foo", "bar"
+        )

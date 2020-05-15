@@ -28,7 +28,7 @@ class DatabaseManager(Manager):
 
     def list_databases(self) -> Generator[Database, None, None]:
         for database in self.client.native_client.ReadDatabases():
-            yield Database(id=database["id"], native_db=database)
+            yield Database(native_resource=database)
 
     def find_database(self, database_id: str) -> Database:
         query = dict(
@@ -39,7 +39,7 @@ class DatabaseManager(Manager):
         databases = list(self.client.native_client.QueryDatabases(query))
 
         if len(databases) > 0:
-            return Database(id=databases[0]["id"], native_db=databases[0])
+            return Database(native_resource=databases[0])
 
         return None
 

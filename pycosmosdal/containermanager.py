@@ -54,7 +54,7 @@ class ContainerManager(Manager):
         for container in self.client.native_client.ReadContainers(
             DatabaseManager.get_database_link(database_id)
         ):
-            yield Container(id=container["id"], native_container=container)
+            yield Container(native_resource=container)
 
     @staticmethod
     def get_container_link(container_id: str, database_id: str):
