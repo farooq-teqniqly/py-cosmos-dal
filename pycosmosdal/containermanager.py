@@ -56,6 +56,32 @@ class ContainerManager(Manager):
         ):
             yield Container(native_resource=container)
 
+    def get_container(self, container_id: str, database_id: str) -> Container:
+        try:
+            container = self.client.native_client.ReadContainer(
+                ContainerManager.get_container_link(container_id, database_id)
+            )
+            return Container(native_resource=container)
+        except HTTPFailure as e:
+            raise ContainerError(e)
+
+    def find_container(self, container_id: str, database_id: str) -> Container:
+        query = dict(
+            query="SELECT * FROM r WHERE r.id=@id",
+            parameters=[dict(name="@id", value=container_id)],
+        )
+
+        containers = list(
+            self.client.native_client.QueryContainers(
+                DatabaseManager.get_database_link(database_id), query
+            )
+        )
+
+        if len(containers) > 0:
+            return Container(native_resource=containers[0])
+
+        return None
+
     @staticmethod
     def get_container_link(container_id: str, database_id: str):
         return f"{DatabaseManager.get_database_link(database_id)}/colls/{container_id}"

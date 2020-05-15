@@ -75,7 +75,33 @@ class ContainerManagerTests(TestCase):
             0, len(list(self.container_manager.list_containers(DATABASE_NAME)))
         )
 
-    def test_delete_container_when_not_exists_raises_DatabaseError(self):
+    def test_delete_container_when_not_exists_raises_ContainerError(self):
         self.assertRaises(
             ContainerError, self.container_manager.delete_container, "foo", "bar"
+        )
+
+    def test_get_container_returns_container(self):
+        try:
+            self.container_manager.create_container("foobar", DATABASE_NAME)
+            container = self.container_manager.get_container("foobar", DATABASE_NAME)
+            self.assertEqual("foobar", container.resource_id)
+        finally:
+            self.container_manager.delete_container("foobar", DATABASE_NAME)
+
+    def test_get_container_when_none_raises_ContainerError(self):
+        self.assertRaises(
+            ContainerError, self.container_manager.get_container, "foo", "bar"
+        )
+
+    def test_find_container_returns_container(self):
+        try:
+            self.container_manager.create_container("foobar", DATABASE_NAME)
+            container = self.container_manager.find_container("foobar", DATABASE_NAME)
+            self.assertEqual("foobar", container.resource_id)
+        finally:
+            self.container_manager.delete_container("foobar", DATABASE_NAME)
+
+    def test_find_container_when_none_returns_None(self):
+        self.assertIsNone(
+            self.container_manager.find_container("foobar", DATABASE_NAME)
         )
