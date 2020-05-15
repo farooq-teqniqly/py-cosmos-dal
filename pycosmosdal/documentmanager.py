@@ -1,6 +1,7 @@
 from typing import Any, Generator, Dict, List
 
 from azure.cosmos.errors import HTTPFailure
+from azure.cosmos.query_iterable import QueryIterable
 
 from pycosmosdal.collectionmanager import CollectionManager
 from pycosmosdal.cosmosdbclient import CosmosDbClient
@@ -54,7 +55,7 @@ class DocumentManager(Manager):
         query: str,
         query_parameters: List[Dict[str, Any]] = None,
         **kwargs,
-    ) -> Generator[Document, None, None]:
+    ) -> QueryIterable:
 
         query_spec = dict(query=query)
 
@@ -65,16 +66,15 @@ class DocumentManager(Manager):
 
         if max_item_count:
             max_item_count = int(max_item_count)
+        else:
+            max_item_count = -1
 
         try:
-            documents = self.client.native_client.QueryItems(
+            return self.client.native_client.QueryItems(
                 CollectionManager.get_collection_link(collection_id, database_id),
                 query_spec,
                 options=dict(maxItemCount=max_item_count),
             )
-
-            for document in documents:
-                yield Document(document)
         except HTTPFailure as e:
             raise DocumentError(e)
 

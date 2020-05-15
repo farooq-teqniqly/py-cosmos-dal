@@ -1,10 +1,9 @@
 from datetime import date
-from typing import Union
 from unittest import TestCase
 
+from pycosmosdal.collectionmanager import CollectionManager
 from pycosmosdal.cosmosdbclient import CosmosDbEmulatorClient
 from pycosmosdal.databasemanager import DatabaseManager
-from pycosmosdal.collectionmanager import CollectionManager
 from pycosmosdal.documentmanager import DocumentManager
 from pycosmosdal.errors import DocumentError
 
@@ -101,16 +100,15 @@ class DocumentManagerTests(TestCase):
                     DATABASE_NAME,
                 )
 
-            documents = list(
-                self.document_manager.query_documents(
-                    COLLECTION_NAME,
-                    DATABASE_NAME,
-                    "SELECT * FROM r WHERE r.id>'0'",
-                    max_item_count=3,
-                )
+            document_iterable = self.document_manager.query_documents(
+                COLLECTION_NAME,
+                DATABASE_NAME,
+                "SELECT * FROM r WHERE r.id>'0'",
+                max_item_count=3,
             )
 
-            self.assertEqual(10, len(documents))
+            documents: list = document_iterable.fetch_next_block()
+            self.assertEqual(3, len(documents))
         finally:
             for i in range(0, 10):
                 self.document_manager.delete_document(
