@@ -1,33 +1,40 @@
 from typing import Any, Generator, Dict, List
 
 from azure.cosmos.errors import HTTPFailure
-from azure.cosmos.query_iterable import QueryIterable
 
 from pycosmosdal.collectionmanager import CollectionManager
 from pycosmosdal.cosmosdbclient import CosmosDbClient
 from pycosmosdal.errors import DocumentError
 from pycosmosdal.manager import Manager
-from pycosmosdal.models import Document
+from pycosmosdal.models import Document, DocumentQueryResults
 
 
 class DocumentManager(Manager):
     def __init__(self, client: CosmosDbClient):
         super().__init__(client)
 
-    def create_document(
+    def upsert_document(
         self, document: dict, collection_id: str, database_id: str
     ) -> Document:
-        document = self.client.native_client.CreateItem(
-            CollectionManager.get_collection_link(collection_id, database_id), document
-        )
-
-        return Document(document)
+        try:
+            document = self.client.native_client.UpsertItem(
+                CollectionManager.get_collection_link(collection_id, database_id),
+                document,
+            )
+            return Document(document)
+        except HTTPFailure as e:
+            raise DocumentError(e)
 
     def get_document(self, document_id: Any, collection_id: str, database_id: str):
-        document = self.client.native_client.ReadItem(
-            DocumentManager.get_document_link(document_id, collection_id, database_id)
-        )
-        return Document(document)
+        try:
+            document = self.client.native_client.ReadItem(
+                DocumentManager.get_document_link(
+                    document_id, collection_id, database_id
+                )
+            )
+            return Document(document)
+        except HTTPFailure as e:
+            raise DocumentError(e)
 
     def delete_document(self, document_id: Any, collection_id: str, database_id: str):
         try:
@@ -42,11 +49,13 @@ class DocumentManager(Manager):
     def get_documents(
         self, collection_id: str, database_id: str,
     ) -> Generator[Document, None, None]:
-
-        for document in self.client.native_client.ReadItems(
-            CollectionManager.get_collection_link(collection_id, database_id)
-        ):
-            yield Document(document)
+        try:
+            for document in self.client.native_client.ReadItems(
+                CollectionManager.get_collection_link(collection_id, database_id)
+            ):
+                yield Document(document)
+        except HTTPFailure as e:
+            raise DocumentError(e)
 
     def query_documents(
         self,
@@ -55,7 +64,7 @@ class DocumentManager(Manager):
         query: str,
         query_parameters: List[Dict[str, Any]] = None,
         **kwargs,
-    ) -> QueryIterable:
+    ) -> DocumentQueryResults:
 
         query_spec = dict(query=query)
 
@@ -70,11 +79,13 @@ class DocumentManager(Manager):
             max_item_count = -1
 
         try:
-            return self.client.native_client.QueryItems(
+            query_iterable = self.client.native_client.QueryItems(
                 CollectionManager.get_collection_link(collection_id, database_id),
                 query_spec,
                 options=dict(maxItemCount=max_item_count),
             )
+
+            return DocumentQueryResults(query_iterable)
         except HTTPFailure as e:
             raise DocumentError(e)
 

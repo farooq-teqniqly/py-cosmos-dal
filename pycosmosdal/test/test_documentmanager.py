@@ -31,7 +31,7 @@ class DocumentManagerTests(TestCase):
 
     def test_create_get_delete_document(self):
         try:
-            self.document_manager.create_document(
+            self.document_manager.upsert_document(
                 DocumentManagerTests._get_test_document("foobar"),
                 COLLECTION_NAME,
                 DATABASE_NAME,
@@ -46,9 +46,29 @@ class DocumentManagerTests(TestCase):
                 "foobar", COLLECTION_NAME, DATABASE_NAME
             )
 
+    def test_upsert_document(self):
+        try:
+            self.document_manager.upsert_document(
+                DocumentManagerTests._get_test_document("foobar"),
+                COLLECTION_NAME,
+                DATABASE_NAME,
+            )
+
+            document = self.document_manager.upsert_document(
+                DocumentManagerTests._get_test_document("foobar"),
+                COLLECTION_NAME,
+                DATABASE_NAME,
+            )
+
+            self.assertEqual("foobar", document.resource_id)
+        finally:
+            self.document_manager.delete_document(
+                "foobar", COLLECTION_NAME, DATABASE_NAME
+            )
+
     def test_get_documents(self):
         try:
-            self.document_manager.create_document(
+            self.document_manager.upsert_document(
                 DocumentManagerTests._get_test_document("foobar"),
                 COLLECTION_NAME,
                 DATABASE_NAME,
@@ -71,21 +91,17 @@ class DocumentManagerTests(TestCase):
 
     def test_query_documents(self):
         try:
-            self.document_manager.create_document(
+            self.document_manager.upsert_document(
                 DocumentManagerTests._get_test_document("foobar"),
                 COLLECTION_NAME,
                 DATABASE_NAME,
             )
 
-            documents = list(
-                self.document_manager.query_documents(
-                    COLLECTION_NAME,
-                    DATABASE_NAME,
-                    "SELECT * FROM r WHERE r.id='foobar'",
-                )
+            query_result = self.document_manager.query_documents(
+                COLLECTION_NAME, DATABASE_NAME, "SELECT * FROM r WHERE r.id='foobar'",
             )
 
-            self.assertEqual(1, len(documents))
+            self.assertEqual(1, len(query_result.fetch_next()))
         finally:
             self.document_manager.delete_document(
                 "foobar", COLLECTION_NAME, DATABASE_NAME
@@ -94,20 +110,20 @@ class DocumentManagerTests(TestCase):
     def test_query_documents_limit_results(self):
         try:
             for i in range(0, 10):
-                self.document_manager.create_document(
+                self.document_manager.upsert_document(
                     DocumentManagerTests._get_test_document(f"foobar-{i}"),
                     COLLECTION_NAME,
                     DATABASE_NAME,
                 )
 
-            document_iterable = self.document_manager.query_documents(
+            query_result = self.document_manager.query_documents(
                 COLLECTION_NAME,
                 DATABASE_NAME,
                 "SELECT * FROM r WHERE r.id>'0'",
                 max_item_count=3,
             )
 
-            documents: list = document_iterable.fetch_next_block()
+            documents: list = query_result.fetch_next()
             self.assertEqual(3, len(documents))
         finally:
             for i in range(0, 10):
@@ -117,25 +133,23 @@ class DocumentManagerTests(TestCase):
 
     def test_query_documents_with_parameters(self):
         try:
-            self.document_manager.create_document(
+            self.document_manager.upsert_document(
                 DocumentManagerTests._get_test_document("foobar"),
                 COLLECTION_NAME,
                 DATABASE_NAME,
             )
 
-            documents = list(
-                self.document_manager.query_documents(
-                    COLLECTION_NAME,
-                    DATABASE_NAME,
-                    "SELECT * FROM r WHERE r.subtotal>@subtotal AND EXISTS(SELECT VALUE n FROM n in r.items WHERE n.product_id=@product_id)",
-                    [
-                        dict(name="@subtotal", value=400),
-                        dict(name="@product_id", value=100),
-                    ],
-                )
+            query_result = self.document_manager.query_documents(
+                COLLECTION_NAME,
+                DATABASE_NAME,
+                "SELECT * FROM r WHERE r.subtotal>@subtotal AND EXISTS(SELECT VALUE n FROM n in r.items WHERE n.product_id=@product_id)",
+                [
+                    dict(name="@subtotal", value=400),
+                    dict(name="@product_id", value=100),
+                ],
             )
 
-            self.assertEqual(1, len(documents))
+            self.assertEqual(1, len(query_result.fetch_next()))
         finally:
             self.document_manager.delete_document(
                 "foobar", COLLECTION_NAME, DATABASE_NAME
