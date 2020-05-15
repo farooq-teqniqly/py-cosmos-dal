@@ -1,4 +1,4 @@
-from typing import Generator
+from typing import Generator, Union
 
 from azure.cosmos.errors import HTTPFailure
 
@@ -30,7 +30,7 @@ class DatabaseManager(Manager):
         for database in self.client.native_client.ReadDatabases():
             yield Database(native_resource=database)
 
-    def find_database(self, database_id: str) -> Database:
+    def find_database(self, database_id: str) -> Union[Database, None]:
         query = dict(
             query="SELECT * FROM r WHERE r.id=@id",
             parameters=[dict(name="@id", value=database_id)],

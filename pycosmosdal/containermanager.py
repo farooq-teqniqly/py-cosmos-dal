@@ -1,4 +1,4 @@
-from typing import Generator
+from typing import Generator, Union
 
 from azure.cosmos.errors import HTTPFailure
 
@@ -65,7 +65,9 @@ class ContainerManager(Manager):
         except HTTPFailure as e:
             raise ContainerError(e)
 
-    def find_container(self, container_id: str, database_id: str) -> Container:
+    def find_container(
+        self, container_id: str, database_id: str
+    ) -> Union[Container, None]:
         query = dict(
             query="SELECT * FROM r WHERE r.id=@id",
             parameters=[dict(name="@id", value=container_id)],
