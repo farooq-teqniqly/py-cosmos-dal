@@ -74,15 +74,34 @@ class DocumentManagerTests(TestCase):
                 DATABASE_NAME,
             )
 
-            documents = list(
-                self.document_manager.get_documents(COLLECTION_NAME, DATABASE_NAME)
+            query_results = self.document_manager.get_documents(
+                COLLECTION_NAME, DATABASE_NAME
             )
-
-            self.assertEqual(1, len(documents))
+            self.assertEqual(1, len(query_results.fetch_next()))
         finally:
             self.document_manager.delete_document(
                 "foobar", COLLECTION_NAME, DATABASE_NAME
             )
+
+    def test_get_documents_with_max_item_count(self):
+        try:
+            for i in range(1, 11):
+                self.document_manager.upsert_document(
+                    DocumentManagerTests.get_test_document(f"foobar-{i}"),
+                    COLLECTION_NAME,
+                    DATABASE_NAME,
+                )
+
+            query_results = self.document_manager.get_documents(
+                COLLECTION_NAME, DATABASE_NAME, max_item_count=3
+            )
+
+            self.assertEqual(3, len(query_results.fetch_next()))
+        finally:
+            for i in range(1, 11):
+                self.document_manager.delete_document(
+                    f"foobar-{i}", COLLECTION_NAME, DATABASE_NAME
+                )
 
     def test_delete_non_existent_document_raises_DocumentError(self):
         self.assertRaises(

@@ -39,10 +39,10 @@ class DatabaseManagerTests(TestCase):
     def test_find_database_returns_database(self):
         try:
             self.database_manager.create_database("foo")
-            database = self.database_manager.find_database("foo")
+            database = self.database_manager.get_database("foo")
             self.assertEqual("foo", database.resource_id)
         finally:
             self.database_manager.delete_database("foo")
 
     def test_find_database_when_not_exists_returns_none(self):
-        self.assertIsNone(self.database_manager.find_database("foo"))
+        self.assertIsNone(self.database_manager.get_database("foo"))

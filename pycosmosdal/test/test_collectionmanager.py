@@ -88,22 +88,5 @@ class CollectionManagerTests(TestCase):
         finally:
             self.collection_manager.delete_collection("foobar", DATABASE_NAME)
 
-    def test_get_collection_when_none_raises_ContainerError(self):
-        self.assertRaises(
-            CollectionError, self.collection_manager.get_collection, "foo", "bar"
-        )
-
-    def test_find_collection_returns_collection(self):
-        try:
-            self.collection_manager.create_collection("foobar", DATABASE_NAME)
-            collection = self.collection_manager.find_collection(
-                "foobar", DATABASE_NAME
-            )
-            self.assertEqual("foobar", collection.resource_id)
-        finally:
-            self.collection_manager.delete_collection("foobar", DATABASE_NAME)
-
-    def test_find_collection_when_none_returns_None(self):
-        self.assertIsNone(
-            self.collection_manager.find_collection("foobar", DATABASE_NAME)
-        )
+    def test_get_collection_when_not_found_returns_None(self):
+        self.assertIsNone(self.collection_manager.get_collection("foo", DATABASE_NAME))
