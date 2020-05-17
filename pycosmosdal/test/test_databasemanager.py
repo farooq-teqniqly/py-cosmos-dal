@@ -1,3 +1,6 @@
+"""
+DatabaseManager tests.
+"""
 from unittest import TestCase
 
 from pycosmosdal.cosmosdbclient import CosmosDbEmulatorClient

@@ -1,3 +1,6 @@
+"""
+DocumentManager tests.
+"""
 from datetime import date
 from unittest import TestCase
 

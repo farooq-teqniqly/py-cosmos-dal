@@ -1,3 +1,6 @@
+"""
+CollectionManager tests.
+"""
 from unittest import TestCase
 
 from pycosmosdal.collectionmanager import CollectionManager

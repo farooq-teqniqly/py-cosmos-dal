@@ -29,10 +29,14 @@ class CosmosDbClient:
 
 class CosmosDbEmulatorClient(CosmosDbClient):
     """
-    The CosmosDbEmulatorClient client is used when issuing commands
+    The CosmosDbEmulatorClient client is used when issuing commands against the
+    CosmosDb emulator.
     """
 
     def __init__(self):
+        """
+        Creates a CosmosDbEmulatorClient instance.
+        """
         super().__init__(
             "https://localhost:8081",
             "C2y6yDjf5/R+ob0N8A7Cgv30VRDJIWEHLM+4QDU5DE2nQ9nDuVTqobD4b8mGGyPMbIZnqyMsEcaGQy67XIw/Jw==",

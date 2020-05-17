@@ -1,3 +1,6 @@
+"""
+Testing CRUD operations against a partitioned collection.
+"""
 from unittest.case import TestCase
 
 from pycosmosdal.collectionmanager import CollectionManager

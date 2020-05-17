@@ -14,11 +14,11 @@
         <array />
       </option>
       <option name="outputFromStdout" value="false" />
-      <option name="program" value="$USER_HOME$/AppData/Local/Programs/Python/Python38-32/Scripts/black.exe" />
+      <option name="program" value="$USER_HOME$/AppData/Local/Programs/Python/Python38/Scripts/black.exe" />
       <option name="runOnExternalChanges" value="true" />
       <option name="scopeName" value="Default Changelist" />
       <option name="trackOnlyRoot" value="false" />
-      <option name="workingDir" value="" />
+      <option name="workingDir" value="$ProjectFileDir$" />
       <envs />
     </TaskOptions>
   </component>
