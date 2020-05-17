@@ -1,4 +1,4 @@
-import setuptools
+from setuptools import setup, find_packages
 
 with open("README.md", "r") as fh:
     long_description = fh.read()
@@ -7,16 +7,17 @@ short_description = (
     "PyCosmosDal is a wrapper around the Microsoft Azure CosmosDb Python SDK."
 )
 
-setuptools.setup(
-    name="pycosmosdal-teqniqly",  # Replace with your own username
-    version="0.0.1",
+setup(
+    install_requires=["azure-cosmos==3.1.2"],
+    name="pycosmosdal-teqniqly",
+    version="1.0.0",
     author="Teqniqly",
     author_email="farooq@teqniqly.com",
     description=short_description,
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/teqniqly/py-cosmos-dal",
-    packages=setuptools.find_packages(),
+    packages=find_packages(),
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",
