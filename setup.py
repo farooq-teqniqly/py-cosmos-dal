@@ -10,7 +10,7 @@ short_description = (
 setup(
     install_requires=["azure-cosmos==3.1.2"],
     name="pycosmosdal-teqniqly",
-    version="0.0.1",
+    version="1.0.0",
     author="Teqniqly",
     author_email="farooq@teqniqly.com",
     description=short_description,
