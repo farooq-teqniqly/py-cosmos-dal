@@ -1,6 +1,7 @@
 """
 Testing CRUD operations against a partitioned collection.
 """
+from datetime import date
 from unittest.case import TestCase
 
 from pycosmosdal.collectionmanager import CollectionManager
@@ -8,7 +9,6 @@ from pycosmosdal.cosmosdbclient import CosmosDbEmulatorClient
 from pycosmosdal.databasemanager import DatabaseManager
 from pycosmosdal.documentmanager import DocumentManager
 from pycosmosdal.errors import DocumentError
-from pycosmosdal.test.test_documentmanager import DocumentManagerTests
 
 DATABASE_NAME = __name__
 PARTITIONED_COLLECTION_NAME = f"{DATABASE_NAME}_container_partitioned"
@@ -43,7 +43,7 @@ class PartitionedCollectionCrudTests(TestCase):
         document_id = str(1)
 
         self.document_manager.upsert_document(
-            DocumentManagerTests.get_test_document(document_id),
+            PartitionedCollectionCrudTests.get_test_document(document_id),
             PARTITIONED_COLLECTION_NAME,
             DATABASE_NAME,
         )
@@ -60,7 +60,7 @@ class PartitionedCollectionCrudTests(TestCase):
         document_id = str(1)
 
         self.document_manager.upsert_document(
-            DocumentManagerTests.get_test_document(document_id),
+            PartitionedCollectionCrudTests.get_test_document(document_id),
             PARTITIONED_COLLECTION_NAME,
             DATABASE_NAME,
         )
@@ -78,7 +78,7 @@ class PartitionedCollectionCrudTests(TestCase):
         document_id = str(1)
 
         self.document_manager.upsert_document(
-            DocumentManagerTests.get_test_document(document_id),
+            PartitionedCollectionCrudTests.get_test_document(document_id),
             PARTITIONED_COLLECTION_NAME,
             DATABASE_NAME,
         )
@@ -96,7 +96,7 @@ class PartitionedCollectionCrudTests(TestCase):
         document_id = str(1)
 
         self.document_manager.upsert_document(
-            DocumentManagerTests.get_test_document(document_id),
+            PartitionedCollectionCrudTests.get_test_document(document_id),
             PARTITIONED_COLLECTION_NAME,
             DATABASE_NAME,
         )
@@ -112,3 +112,25 @@ class PartitionedCollectionCrudTests(TestCase):
         )[0]
 
         self.assertEqual(document_id, document.resource_id)
+
+    @staticmethod
+    def get_test_document(document_id: str) -> dict:
+        return {
+            "id": document_id,
+            "account_number": "Account1",
+            "purchase_order_number": "PO18009186470",
+            "order_date": date(2020, 5, 14).strftime("%c"),
+            "subtotal": 419.4589,
+            "tax_amount": 12.5838,
+            "freight": 472.3108,
+            "total_due": 985.018,
+            "items": [
+                {
+                    "order_qty": 1,
+                    "product_id": 100,
+                    "unit_price": 418.4589,
+                    "line_price": 418.4589,
+                }
+            ],
+            "ttl": 60 * 60 * 24 * 30,
+        }
